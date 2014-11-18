@@ -127,6 +127,59 @@ class TaskScheduler
     return  offloadedTasks;
   }
 
+  private HashMap<Integer,Integer> naiveAlgo(Resource[] resources, List<Task> taskList) 
+  {
+    double inf = Double.POSITIVE_INFINITY;
+    int size = resources.length;
+    double[] curDevFinishTime = new double[size];
+    double[] newDevFinishTime = new double[size];
+    HashMap<Integer,Integer> offloadedTasks = new HashMap<Integer,Integer>();
+    Random rn = new Random();
+    
+    for(int i=0;i<size;i++)
+    {
+      curDevFinishTime[i] = resources[i].firstContactTime;
+    }
+    double curMinFinTime;
+    int curMinPos;
+
+    for(Task t: taskList)
+    {
+      int assigned = 0;
+      for(int i=0;i<size;i++)
+      {
+        newDevFinishTime[i] = calculateTaskTime(resources[i],t) + curDevFinishTime[i];
+      }
+      for(int i=2;i<size;i++)
+      {
+        if(newDevFinishTime[i] < resources[i].lastContactTime)
+        {
+          curDevFinishTime[i] = newDevFinishTime[i];
+          assigned = 1;
+          offloadedTasks.put(t.taskId,resources[i].peerId);
+          break;
+        }
+      }
+      if(!assigned)
+      {
+    	  int rand = rn.nextInt(2);
+    	  if(newDevFinishTime[rand] < resources[rand].lastContactTime)
+    		  offloadedTasks.put(t.taskId,resources[rand].peerId);
+    	  else
+    		  offloadedTasks.put(t.taskId,resources[(rand+1)%2].peerId);
+    		  
+      }
+      
+      
+      //curOffloadedTasks = offloadedTasks.put(resources[curMinPos].peerId);
+      //curOffloadedTasks.add(t.taskId);
+      
+    }
+    return  offloadedTasks;
+  }
+
+  
+  
   private HashMap<Integer,Integer> randomAlgorithm(Resource[] resources, List<Task> taskList)
   {
     int size = resources.length;

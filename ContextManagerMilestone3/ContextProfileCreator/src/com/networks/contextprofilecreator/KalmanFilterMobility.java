@@ -10,7 +10,7 @@ public class KalmanFilterMobility {
 	//x(t)=Ax'(t-1)+Bu(t)
 	//A=[{1,t},{0,1}] 
 	//B=[t^2/2,t]
-	//C=[1,0]
+	//C=[{1,0},{0,1}]			Made changes to fix issues in initial equation
 	//Error Covariance
 	//P(t)=AP(t-1)A^T+E(x)
 	//Kalman Gain:
@@ -22,7 +22,7 @@ public class KalmanFilterMobility {
 	
 	private SimpleMatrix A = new SimpleMatrix(2, 2); 	//state transition matrix
 	private SimpleMatrix B = new SimpleMatrix(2, 1); 	//input control matrix
-	private SimpleMatrix C = new SimpleMatrix(1, 2); 	//measurement matrix
+	private SimpleMatrix C = new SimpleMatrix(2, 2); 	//measurement matrix
 	private double accU = 1;							//Acceleration defaulted to 1
 	private SimpleMatrix initState = new SimpleMatrix(2, 1); //Initialize initial position to 0,0
 	private SimpleMatrix estimatedState = initState; //Make the estimate and measured state same
@@ -45,7 +45,7 @@ public class KalmanFilterMobility {
 		A = new SimpleMatrix(temp);
 		temp = new double[][] {{time*time/2},{time}};
 		B = new SimpleMatrix(temp);
-		temp = new double[][] {{1,0}};
+		temp = new double[][] {{1,0},{0,1}};
 		C = new SimpleMatrix(temp);
 		temp = new double[][] {{time*time*time*time/4,time*time*time/2},{time*time*time/2,time*time}};
 		SimpleMatrix Ex = new SimpleMatrix(temp).scale(minCovarX*minCovarX); 		 //position noise conversion to Covariance matrix
@@ -53,16 +53,16 @@ public class KalmanFilterMobility {
 		{
 			P = Ex;
 		}	
-		temp = new double[][]{{minCovarZ*minCovarZ}};
+		temp = new double[][]{{minCovarZ*minCovarZ,0},{0,1}};
 		SimpleMatrix Ez = new SimpleMatrix(temp);
 		estimatedState = A.mult(estimatedState).plus(accU,B);
 		P = A.mult(P).mult(A.transpose()).plus(Ex);
-		SimpleMatrix K = new SimpleMatrix();
-		K = P.mult(C.transpose()).mult(C.mult(P).mult(C.transpose()).plus(Ez).invert());
+		SimpleMatrix K = new SimpleMatrix(2,2);
+		K = P.mult(C.transpose()).mult((C.mult(P).mult(C.transpose()).plus(Ez)).invert());
 		temp = new double[][] {{loc.getLatitude()},{loc.getLongitude()}};
 		SimpleMatrix tempLoc = new SimpleMatrix(temp);
-		estimatedState = estimatedState.plus(K.mult(tempLoc).minus(C.mult(estimatedState)));
-		P = (SimpleMatrix.identity(2).minus(C.mult(C))).mult(P);
+		estimatedState = estimatedState.plus(K.mult(tempLoc.minus(estimatedState)));
+		P = (SimpleMatrix.identity(2).minus(K.mult(C))).mult(P);
 	}
 	
 	public Location predictTime(double time,String uniqueID)

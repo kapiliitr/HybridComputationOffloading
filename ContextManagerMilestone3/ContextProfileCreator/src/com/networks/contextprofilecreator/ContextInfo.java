@@ -9,7 +9,7 @@ public class ContextInfo {
 	//computation speed
 	//Network bandwidth
 	//Unique ID
-	private ArrayList<Location> contextLocation;
+	private ArrayList<Location> contextLocation = new ArrayList<Location>();
 	private String contextCPUUsage = "";
 	private double contextAcc = 0;
 	private long startTime;

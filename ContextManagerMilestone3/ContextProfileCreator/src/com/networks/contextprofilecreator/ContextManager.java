@@ -34,6 +34,7 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 //	private Sensor objSensor;
 	private double accU = 1;
 	private String filename = "Context_History";
+	private Context fileIO;
 	
 	public Location getTrackingLoc()
 	{
@@ -44,8 +45,9 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		trackingLoc = lat;
 	}
 	
-	public ContextManager(LocationManager objLoc)
+	public ContextManager(LocationManager objLoc, Context objTemp)
 	{
+		fileIO = objTemp;
 		//Load Data from file -- To Be Implemented
 		checkDataBackup();
 		//Sensor to get acceleration data
@@ -75,8 +77,9 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		}
 		locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
 		lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
-		objKalmanFilter.debugCntxt = this;
+		objKalmanFilter.debugCntxt = fileIO;
 		objKalmanFilter.debugMode = true;
+		objKalmanFilter.debugFileMode = Context.MODE_APPEND;
 		updateContextInfo();
 	}
 	

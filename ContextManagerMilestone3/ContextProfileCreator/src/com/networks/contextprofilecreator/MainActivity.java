@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		lv = (ListView) findViewById(R.id.listView1);
 		setContentView(R.layout.activity_mobility_pattern);
-		objContextDatahandler = new ContextManager((LocationManager)this.getSystemService(Context.LOCATION_SERVICE));
+		objContextDatahandler = new ContextManager((LocationManager)this.getSystemService(Context.LOCATION_SERVICE),this.getApplicationContext());
 		
 //		Location loc = new Location("XYZ");	
 		objContextDatahandler.updateContextInfo();

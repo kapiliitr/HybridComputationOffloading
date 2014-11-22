@@ -36,6 +36,7 @@ public class KalmanFilterMobility {
 	private SimpleMatrix P;							 //position variance
 	public Boolean debugMode = false; 				//Writes all prediction to file
 	public Context debugCntxt; 
+	public int debugFileMode = 0; 
 	private int debugCnt = 0; 
 	
 	public double getaccU()
@@ -78,7 +79,7 @@ public class KalmanFilterMobility {
 				FileOutputStream outputStream;
 
 				try {
-				  outputStream = debugCntxt.openFileOutput("ContextText.txt", Context.MODE_PRIVATE);
+				  outputStream = debugCntxt.openFileOutput("ContextText.txt",debugFileMode);
 				  String kalmanData = "Update: " + debugCnt +  "Kalman Gain(K): " + K.toString() 
 						  + "Covariance(P): " + P.toString() + "Input Location: " + loc.getLatitude() + ", " + loc.getLongitude() 
 						  + "Corrected Prediction(estimatedState): " + estimatedState + " ";
@@ -107,7 +108,7 @@ public class KalmanFilterMobility {
 			FileOutputStream outputStream;
 
 			try {
-			  outputStream = debugCntxt.openFileOutput("ContextText.txt", Context.MODE_PRIVATE);
+			  outputStream = debugCntxt.openFileOutput("ContextText.txt", debugFileMode);
 			  String kalmanData = "Prediction: " + debugCnt + "Corrected Prediction(estimatedState): " + estimatedState + " ";
 			  outputStream.write(kalmanData.getBytes());
 			  outputStream.close();

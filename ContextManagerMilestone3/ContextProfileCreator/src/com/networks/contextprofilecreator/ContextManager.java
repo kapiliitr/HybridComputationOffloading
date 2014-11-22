@@ -3,23 +3,37 @@ package com.networks.contextprofilecreator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-
+//import android.hardware.Sensor;
+//import android.hardware.SensorEvent;
+//import android.hardware.SensorEventListener;
+//import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+
+import java.io.File;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.lang.Runtime;
 
-public class ContextManager {
+
+public class ContextManager extends Activity {//implements SensorEventListener{
 	private LocationManager locationManager;
 	private LocationListener locationListener;
 	private String locationProvider = LocationManager.GPS_PROVIDER;
 	private Location lastKnownLocation;
-	private ContextInfo objContextInfo = new ContextInfo();
+	private HistoricalContext objHistory = new HistoricalContext();
+	private KalmanFilterMobility objKalmanFilter = new KalmanFilterMobility();
 	private Location trackingLoc;
+	private String uniqueID = "XYZ";		//Placeholder
+//	private SensorManager objSensorManager;
+//	private Sensor objSensor;
+	private double accU = 1;
+	private String filename = "Context_History";
 	
 	public Location getTrackingLoc()
 	{
@@ -30,10 +44,17 @@ public class ContextManager {
 		trackingLoc = lat;
 	}
 	
-	public ContextManager(LocationManager tempLoc)
+	public ContextManager(LocationManager objLoc)
 	{
+		//Load Data from file -- To Be Implemented
+		checkDataBackup();
+		//Sensor to get acceleration data
+//		objSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+//		if (objSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null){
+//		    objSensor = objSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+//		  }
 		// Acquire a reference to the system Location Manager
-		locationManager = tempLoc;
+		locationManager = objLoc;
 		//
 		//	// Define a listener that responds to location updates
 		locationListener = new LocationListener() {
@@ -54,9 +75,54 @@ public class ContextManager {
 		}
 		locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
 		lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+		updateContextInfo();
 	}
 	
-	private void getLocUpdates()
+	private void checkDataBackup()
+	{
+		String strContextData = "";
+		try
+		{
+			File tempFile = new File(filename);
+			if(tempFile.exists())
+			{
+				FileInputStream is = this.openFileInput(filename);
+				BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+				if (is!=null) {	
+					while ((strContextData = reader.readLine()) != null) {	
+						ContextInfo objContextInfo = new ContextInfo(strContextData);
+						objHistory.appendContextdata(objContextInfo);
+						long timeDiff = objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime();
+						objKalmanFilter.Update(objContextInfo.getContextLocation(),timeDiff);
+					}				
+				}		
+				is.close();	
+			}
+		}
+		catch(Exception ex)
+		{
+			
+		}
+	}
+	
+//	@Override
+//	  public final void onSensorChanged(SensorEvent event) {
+//	    accU = event.values[0];
+//	  }
+//	
+//	@Override
+//	  protected void onResume() {
+//	    super.onResume();
+//	    objSensorManager.registerListener(this, objSensor, SensorManager.SENSOR_DELAY_NORMAL);
+//	  }
+//
+//	  @Override
+//	  protected void onPause() {
+//	    super.onPause();
+//	    objSensorManager.unregisterListener(this);
+//	  }
+	
+	private void getLocUpdates(ContextInfo objContextInfo)
 	{
 		locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
 		Location currentLocation = locationManager.getLastKnownLocation(locationProvider);
@@ -65,22 +131,24 @@ public class ContextManager {
 		{
 			lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
 		}
-//		objContextInfo.setContextDistanceFrom(lastKnownLocation.distanceTo(trackingLoc));
-		objContextInfo.setContextLatitude(lastKnownLocation.getLatitude());
-		objContextInfo.setContextLongitude(lastKnownLocation.getLongitude());
+		objContextInfo.setContextLocation(lastKnownLocation);
+		objContextInfo.setContextAcc(accU);
 		locationManager.removeUpdates(locationListener);
 	}
 	
-	public void printUpdates(Context objTemp)
+	public void printUpdates()
 	{
-		AlertDialog.Builder alertDialog = new AlertDialog.Builder(objTemp);
-		alertDialog.setTitle("Context Infromation");
-//		alertDialog.setMessage("Context Distance: " + objContextInfo.getContextDistanceFrom());
+//		ContextInfo objContextInfo = objHistory.getLastContextdata();
+//		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+//		alertDialog.setTitle("Context Infromation");
+////		alertDialog.setMessage("Context Distance: " + objContextInfo.getContextDistanceFrom());
 //		alertDialog.setMessage("Context Latitude: " + objContextInfo.getContextLatitude());
 //		alertDialog.setMessage("Context Longitude: " + objContextInfo.getContextLongitude());
-		alertDialog.setMessage("Context CPU Usage: " + objContextInfo.getContextCPUUsage());
-		alertDialog.setPositiveButton("Ok", null);
-		alertDialog.show();
+//		alertDialog.setMessage("Context CPU Usage: " + objContextInfo.getContextCPUUsage());
+//		long timeDiff = objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime();
+//		alertDialog.setMessage("Context Predicted Location: " + getPredictedLoc(timeDiff));
+//		alertDialog.setPositiveButton("Ok", null);
+//		alertDialog.show();
 	}
 	
 	private static final int TWO_MINUTES = 1000 * 60 * 2;
@@ -141,15 +209,20 @@ public class ContextManager {
 	
 	public void updateContextInfo()
 	{
-		this.getLocUpdates();
-		this.getCPUusage();
+		ContextInfo objContextInfo = new ContextInfo();
+		this.getLocUpdates(objContextInfo);
+		this.getCPUusage(objContextInfo);
+		objContextInfo.setStartTime();
+		objHistory.appendContextdata(objContextInfo);
+		long timeDiff = objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime();
+		objKalmanFilter.Update(objContextInfo.getContextLocation(),timeDiff);
 	}
 	
-	private void getCPUusage()
+	private void getCPUusage(ContextInfo objContextInfo)
 	{
 		// -m 10, how many entries you want, -d 1, delay by how much, -n 1,
 		// number of iterations
-		ArrayList<String> list = new ArrayList<String>();
+		//ArrayList<String> list = new ArrayList<String>();
 		String line="Salem";
 //		String UserCPU = "";
 		int UserCPUperc = 0;
@@ -181,17 +254,45 @@ public class ContextManager {
 			try {
 			    SystemCPUperc = Integer.parseInt(SystemCPU);
 			} catch(NumberFormatException nfe) {
-			   System.out.println("Could not parse " + nfe);
+//			   System.out.println("Could not parse " + nfe);
 			}
 			
 			p.waitFor();
 		}
 		catch(Exception ex)
 		{
-			list.add("Crashed");
+//			list.add("Crashed");
 //			list = "Crashed";
 		}
-//		objContextInfo.setContextCPUUsage(list.toString());
-		objContextInfo.setContextCPUUsage(SystemCPUperc+UserCPUperc);
+		String temp = "" + (SystemCPUperc+UserCPUperc);
+		objContextInfo.setContextCPUUsage(temp);
+	}
+	
+	public void saveStateData()
+	{
+		//To be implemented --- save data to file
+		FileOutputStream outputStream;
+
+		try {
+		  outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+		  for(int i=0; i < objHistory.getContextlength(); i ++)
+		  {
+			  ContextInfo objContextInfo = objHistory.getContextdata(i);
+			  String contextData = objContextInfo.getStartTime() +"," 
+					  + objContextInfo.getContextAcc() +"," + objContextInfo.getContextLatitude() +","
+					  + objContextInfo.getContextLongitude() +"," 
+					  + objContextInfo.getContextSpeed() +","
+					  + objContextInfo.getContextCPUUsage();
+			  outputStream.write(contextData.getBytes());
+		  }
+		  outputStream.close();
+		} catch (Exception e) {
+		  e.printStackTrace();
+		}
+	}
+	
+	private Location getPredictedLoc(double time)
+	{
+		return objKalmanFilter.predictTime(time,uniqueID);		
 	}
 }

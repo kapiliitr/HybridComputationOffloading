@@ -24,7 +24,7 @@ public class KalmanFilterMobility {
 	private SimpleMatrix B = new SimpleMatrix(2, 1); 	//input control matrix
 	private SimpleMatrix C = new SimpleMatrix(1, 2); 	//measurement matrix
 	private double accU = 1;							//Acceleration defaulted to 1
-	private SimpleMatrix initState = new SimpleMatrix(2, 2); //Initialize initial position to 0,0
+	private SimpleMatrix initState = new SimpleMatrix(2, 1); //Initialize initial position to 0,0
 	private SimpleMatrix estimatedState = initState; //Make the estimate and measured state same
 	private double minCovarX = 0.01;				 //Min covariance to move X along.
 	private double minCovarZ = 10;					 //Min covariance to move Z along.
@@ -55,11 +55,11 @@ public class KalmanFilterMobility {
 		}	
 		temp = new double[][]{{minCovarZ*minCovarZ}};
 		SimpleMatrix Ez = new SimpleMatrix(temp);
-		estimatedState = A.mult(estimatedState).plus(B.scale(accU));
+		estimatedState = A.mult(estimatedState).plus(accU,B);
 		P = A.mult(P).mult(A.transpose()).plus(Ex);
 		SimpleMatrix K = new SimpleMatrix();
 		K = P.mult(C.transpose()).mult(C.mult(P).mult(C.transpose()).plus(Ez).invert());
-		temp = new double[][] {{loc.getLatitude(),loc.getLongitude()},{loc.getSpeed(),0}};
+		temp = new double[][] {{loc.getLatitude()},{loc.getLongitude()}};
 		SimpleMatrix tempLoc = new SimpleMatrix(temp);
 		estimatedState = estimatedState.plus(K.mult(tempLoc).minus(C.mult(estimatedState)));
 		P = (SimpleMatrix.identity(2).minus(C.mult(C))).mult(P);

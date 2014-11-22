@@ -1,71 +1,91 @@
 package com.networks.contextprofilecreator;
 
+import android.location.Location;
+
 public class ContextInfo {
 	//Initial contact time
 	//Final contact time
 	//computation speed
 	//Network bandwidth
 	//Unique ID
-	private double contextLatitude = 0;
-	private double ContextUniqueID = 0;
-	private double contextLongitude = 0;
-	private double contextDistanceFrom = -1;
-	private int contextCPUUsage = 0;
+	private Location contextLocation;
+	private String contextCPUUsage = "";
+	private double contextAcc = 0;
+	private long startTime;
 	
-	public ContextInfo()
+	public long getStartTime()
 	{
-		
+		return startTime;
 	}
-	
-	public double getContextUniqueID()
+	public void setStartTime()
 	{
-		return ContextUniqueID;
+		startTime = System.currentTimeMillis();
 	}
-	public void setContextUniqueID(double ID)
+	public float getContextSpeed()
 	{
-		ContextUniqueID = ID;
+		return contextLocation.getSpeed();
+	}
+	public Location getContextLocation()
+	{
+		return contextLocation;
+	}
+	public void setContextLocation(Location lat)
+	{
+		contextLocation = lat;
+	}
+	public double getContextAcc()
+	{
+		return contextAcc;
+	}
+	public void setContextAcc(double lat)
+	{
+		contextAcc = lat;
 	}
 	public double getContextLatitude()
 	{
-		return contextLatitude;
-	}
-	public void setContextLatitude(double lat)
-	{
-		contextLatitude = lat;
+		return contextLocation.getLatitude();
 	}
 	public double getContextLongitude()
 	{
-		return contextLongitude;
+		return contextLocation.getLongitude();
 	}
-	public void setContextLongitude(double lat)
+	public double getContextDistanceFrom(Location loc)
 	{
-		contextLongitude = lat;
+		return contextLocation.distanceTo(loc);
 	}
-	public double getContextDistanceFrom()
-	{
-		return contextDistanceFrom;
-	}
-	public void setContextDistanceFrom(double lat)
-	{
-		contextDistanceFrom = lat;
-	}
-
-	public int getContextCPUUsage()
+	public String getContextCPUUsage()
 	{
 		return contextCPUUsage;
 	}
-	public void setContextCPUUsage(int lat)
+	public void setContextCPUUsage(String lat)
 	{
 		contextCPUUsage = lat;
 	}
+	
+	public ContextInfo()
+	{
+		startTime = System.currentTimeMillis();
 	}
 	
-//	public String getContextCPUUsage()
-//	{
-//		return contextCPUUsage;
-//	}
-//	public void setContextCPUUsage(String lat)
-//	{
-//		contextCPUUsage = lat;
-//	}
-//}
+	public ContextInfo(String temp)
+	{
+		String[] arrTemp = temp.split(",");	
+		if(arrTemp.length < 6)
+		{
+			return;
+		}
+		startTime = Long.parseLong(arrTemp[0]);
+		contextAcc = Double.parseDouble(arrTemp[1]);
+		Location loc = new Location("History_Data");
+		loc.setLatitude(Double.parseDouble(arrTemp[2]));
+		loc.setLongitude(Double.parseDouble(arrTemp[3]));
+		loc.setSpeed(Float.parseFloat(arrTemp[4]));
+		contextLocation = loc;
+		contextCPUUsage = arrTemp[5];
+	}
+	
+	public long returnCurrentTime()
+	{
+		return System.currentTimeMillis();
+	}
+}

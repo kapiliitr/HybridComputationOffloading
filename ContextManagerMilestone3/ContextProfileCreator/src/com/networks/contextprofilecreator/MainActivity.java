@@ -1,28 +1,30 @@
 package com.networks.contextprofilecreator;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+//import java.io.BufferedReader;
+//import java.io.InputStreamReader;
+//import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
+//import android.app.AlertDialog;
+//import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
+//import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+//import android.widget.AdapterView;
+//import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
+//import android.widget.AdapterView.OnItemClickListener;
 import android.location.Location;
 //import android.widget.Toast;
+//import android.location.LocationManager;
 import android.location.LocationManager;
 
 public class MainActivity extends Activity {	
@@ -40,7 +42,7 @@ public class MainActivity extends Activity {
 		Location loc = new Location("XYZ");	
 		objContextDatahandler.updateContextInfo();
 		objContextDatahandler.setTrackingLoc(loc);
-		objContextDatahandler.printUpdates(this);
+		objContextDatahandler.printUpdates();
 		
 		ScheduledExecutorService scheduleTaskExecutor = Executors.newScheduledThreadPool(5);
 		// This schedule a runnable task every 2 minutes
@@ -56,7 +58,7 @@ public class MainActivity extends Activity {
 		try {
 			Location loc = new Location("XYZ");
 			objContextDatahandler.setTrackingLoc(loc);
-			objContextDatahandler.printUpdates(this);
+			objContextDatahandler.printUpdates();
 
 			Toast.makeText(getBaseContext(), "Got update",Toast.LENGTH_SHORT)
 					.show();

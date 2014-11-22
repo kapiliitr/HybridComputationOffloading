@@ -7,6 +7,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.alternativevision.gpx.GPXParser;
+import org.alternativevision.gpx.beans.GPX;
+
 
 import android.app.Activity;
 import android.content.Context;
@@ -26,6 +29,7 @@ import android.location.Location;
 //import android.widget.Toast;
 //import android.location.LocationManager;
 import android.location.LocationManager;
+//import java.io.FileInputStream;
 
 public class MainActivity extends Activity {	
 	
@@ -39,11 +43,21 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_mobility_pattern);
 		objContextDatahandler = new ContextManager((LocationManager)this.getSystemService(Context.LOCATION_SERVICE));
 		
-		Location loc = new Location("XYZ");	
+//		Location loc = new Location("XYZ");	
 		objContextDatahandler.updateContextInfo();
-		objContextDatahandler.setTrackingLoc(loc);
-		objContextDatahandler.printUpdates();
-		
+//		objContextDatahandler.setTrackingLoc(loc);
+//		objContextDatahandler.printUpdates();
+//		GPX gpx;
+//		try
+//		{
+//			GPXParser p = new GPXParser();
+//			FileInputStream in = new FileInputStream("C:\\virtua's stuff\\HybridComputationOffloading\\ContextManagerMilestone3\\LocationGpx\\CloughToKlaus.gpx");
+//			gpx = p.parseGPX(in);
+//		}
+//		catch(Exception ex)
+//		{
+//			
+//		}		
 		ScheduledExecutorService scheduleTaskExecutor = Executors.newScheduledThreadPool(5);
 		// This schedule a runnable task every 2 minutes
 		scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {

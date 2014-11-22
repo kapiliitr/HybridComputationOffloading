@@ -1,7 +1,7 @@
 package com.networks.contextprofilecreator;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+//import android.app.AlertDialog;
 import android.content.Context;
 //import android.hardware.Sensor;
 //import android.hardware.SensorEvent;
@@ -75,6 +75,8 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		}
 		locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
 		lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+		objKalmanFilter.debugCntxt = this;
+		objKalmanFilter.debugMode = true;
 		updateContextInfo();
 	}
 	
@@ -91,8 +93,8 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 				if (is!=null) {	
 					while ((strContextData = reader.readLine()) != null) {	
 						ContextInfo objContextInfo = new ContextInfo(strContextData);
+						double timeDiff = (objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001;
 						objHistory.appendContextdata(objContextInfo);
-						long timeDiff = objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime();
 						objKalmanFilter.Update(objContextInfo.getContextLocation(),timeDiff);
 					}				
 				}		
@@ -209,12 +211,16 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 	
 	public void updateContextInfo()
 	{
+		double timeDiff = 1;
 		ContextInfo objContextInfo = new ContextInfo();
 		this.getLocUpdates(objContextInfo);
 		this.getCPUusage(objContextInfo);
 		objContextInfo.setStartTime();
+		if(objHistory.getContextlength() > 0)
+		{
+			timeDiff = (objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001;
+		}
 		objHistory.appendContextdata(objContextInfo);
-		long timeDiff = objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime();
 		objKalmanFilter.Update(objContextInfo.getContextLocation(),timeDiff);
 	}
 	
@@ -278,11 +284,23 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		  for(int i=0; i < objHistory.getContextlength(); i ++)
 		  {
 			  ContextInfo objContextInfo = objHistory.getContextdata(i);
-			  String contextData = objContextInfo.getStartTime() +"," 
-					  + objContextInfo.getContextAcc() +"," + objContextInfo.getContextLatitude() +","
-					  + objContextInfo.getContextLongitude() +"," 
-					  + objContextInfo.getContextSpeed() +","
-					  + objContextInfo.getContextCPUUsage();
+			  String contextData = objContextInfo.getStartTime() +","
+					  + objContextInfo.getContextCPUUsage() +"," + objContextInfo.getContextAcc() +",";
+			  for(int j = 0; j < objContextInfo.getContextLocSize(); j++)
+			  {
+				  if(j+1 != objContextInfo.getContextLocSize())
+				  {
+					  contextData = contextData  + objContextInfo.getContextLatitude() +"|"
+								  + objContextInfo.getContextLongitude() +"|" 
+								  + objContextInfo.getContextSpeed() + ",";
+				  }
+				  else
+				  {
+					  contextData = contextData + objContextInfo.getContextLatitude() +"|"
+							  + objContextInfo.getContextLongitude() +"|" 
+							  + objContextInfo.getContextSpeed();
+				  }
+			  }
 			  outputStream.write(contextData.getBytes());
 		  }
 		  outputStream.close();
@@ -291,8 +309,51 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		}
 	}
 	
-	private Location getPredictedLoc(double time)
+	public ContextInfo getContextInfo()
 	{
-		return objKalmanFilter.predictTime(time,uniqueID);		
+		ContextInfo objContextInfo = new ContextInfo();
+		double timeDiff = (objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001;
+		objContextInfo.setMngrID(uniqueID);
+		objContextInfo.setContextAcc(objHistory.getLastContextdata().getContextAcc());
+		objContextInfo.setContextCPUUsage(objHistory.getLastContextdata().getContextCPUUsage());
+		objContextInfo.setStartTime();
+		Location temploc = objKalmanFilter.predictTime(timeDiff,uniqueID + 1);	
+		objContextInfo.setContextLocation(temploc);
+		Location temploc1 = objKalmanFilter.predictTime(timeDiff*2,uniqueID + 2);	
+		objContextInfo.setContextLocation(temploc1);
+		Location temploc2 = objKalmanFilter.predictTime(timeDiff*3,uniqueID + 3);	
+		objContextInfo.setContextLocation(temploc2);
+		Location temploc3 = objKalmanFilter.predictTime(timeDiff*4,uniqueID + 4);	
+		objContextInfo.setContextLocation(temploc3);
+		return objContextInfo;
+	}
+	
+	public Boolean CompareContextInfo(ContextInfo objPeerContextInfo)
+	{
+		Boolean bResult = false;
+		double initDist = 0;
+		ContextInfo objInitiatorContextInfo = this.getContextInfo();
+		for(int i = 0; i <4; i ++)
+		{
+			Location objPeerLoc = objPeerContextInfo.getContextLocation(i);
+			Location objInitLoc = objInitiatorContextInfo.getContextLocation(i);
+			double dist = objPeerLoc.distanceTo(objInitLoc);
+			if( i != 0)
+			{
+				if(dist > initDist)
+				{
+					bResult = false;
+				}
+				else
+				{
+					bResult = true;
+				}
+			}
+			else
+			{
+				initDist = dist;
+			}
+		}
+		return bResult;
 	}
 }

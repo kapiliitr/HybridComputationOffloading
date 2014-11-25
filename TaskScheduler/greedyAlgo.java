@@ -6,87 +6,67 @@ class TaskScheduler
 {
   public static void main (String[] args) throws java.lang.Exception
   {
-    //Dummy Resources
-    Resource[] resources = new Resource[3];
+	int maxResources = 20;
+	int maxTasks = 50;
+	
+	/*Resource[] resources = new generateScenario().generateResources(5, 5);
+	List<Task> all_tasks = new generateScenario().generateTasks(5);
+	Task[] tasks = all_tasks.toArray(new Task[all_tasks.size()]);
+	
+	for(int i=0;i<5;i++)
+	{
+		System.out.println(tasks[i].taskId+" "+tasks[i].cyclesReqd+" "+tasks[i].inputSize+" "+tasks[i].outputSize);
+	}*/
+	
+	for(int p=5; p<=maxTasks; p+=5)
+	{
+		for(int q=5; q<=maxResources; q+=5)
+		{
+			Resource[] resources = new generateScenario().generateResources(q, p);
+			List<Task> all_tasks = new generateScenario().generateTasks(p);
+			Task[] tasks = all_tasks.toArray(new Task[all_tasks.size()]);
+			
+		    int i;
+		    double max;
+		   
+		    HashMap<Integer,Integer> result = new TaskScheduler().newGreedyAlgo(resources,all_tasks);
+		    max = new TaskScheduler().calculateFinishTime(result, resources, tasks);
+		    System.out.println("Greedy: "+result.toString()+" Time:"+max);
 
-    //Dummy inititator
-    resources[0]=new Resource();
-    resources[0].peerId=0;
-    resources[0].compSpeed=10;
-    resources[0].firstContactTime=0;
-    resources[0].lastContactTime=Integer.MAX_VALUE;
-    resources[0].latency=0;
-    resources[0].networkBandwidth=Integer.MAX_VALUE;
+		    HashMap<Integer,Integer> random_result = new TaskScheduler().randomAlgorithm(resources,all_tasks);
+		    max = new TaskScheduler().calculateFinishTime(random_result, resources, tasks);
+		    System.out.println("Random: "+random_result.toString()+" Time:"+max);
 
-    //Dummy peer
-    resources[1]=new Resource();
-    resources[1].peerId=1;
-    resources[1].compSpeed=10;
-    resources[1].firstContactTime=0;
-    resources[1].lastContactTime=50;
-    resources[1].latency=.01;
-    resources[1].networkBandwidth=20;
+		    HashMap<Integer,Integer> naive_result = new TaskScheduler().naiveAlgo(resources,all_tasks);
+		    max = new TaskScheduler().calculateFinishTime(naive_result, resources, tasks);
+		    System.out.println("Naive: "+naive_result.toString()+" Time:"+max);
 
-    //Dummy inititator
-    resources[2]=new Resource();
-    resources[2].peerId=2;
-    resources[2].compSpeed=100;
-    resources[2].firstContactTime=50;
-    resources[2].lastContactTime=Integer.MAX_VALUE;
-    resources[2].latency=.1;
-    resources[2].networkBandwidth=25;
+		}
+	}
 
-    //Dummy Tasks
-    List<Task> all_tasks = new ArrayList<Task>();
-    Task[] tasks = new Task[5];
-
-    tasks[0]=new Task();
-    tasks[0].taskId=0;
-    tasks[0].cyclesReqd=10;
-    tasks[0].inputSize=8;
-    tasks[0].outputSize=4;
-    all_tasks.add(tasks[0]);
-
-    tasks[1]=new Task();
-    tasks[1].taskId=1;
-    tasks[1].cyclesReqd=50;
-    tasks[1].inputSize=128;
-    tasks[1].outputSize=32;
-    all_tasks.add(tasks[1]);
-
-    tasks[2]=new Task();
-    tasks[2].taskId=2;
-    tasks[2].cyclesReqd=150;
-    tasks[2].inputSize=64;
-    tasks[2].outputSize=4;
-    all_tasks.add(tasks[2]);
-
-    tasks[3]=new Task();
-    tasks[3].taskId=3;
-    tasks[3].cyclesReqd=25;
-    tasks[3].inputSize=1024;
-    tasks[3].outputSize=1024;
-    all_tasks.add(tasks[3]);
-
-    tasks[4]=new Task();
-    tasks[4].taskId=4;
-    tasks[4].cyclesReqd=4000;
-    tasks[4].inputSize=32;
-    tasks[4].outputSize=8;
-    all_tasks.add(tasks[4]);
-
-    HashMap<Integer,Integer> result = new TaskScheduler().newGreedyAlgo(resources,all_tasks);
-    System.out.println(result.toString());
-    HashMap<Integer,Integer> random_result = new TaskScheduler().randomAlgorithm(resources,all_tasks);
-    System.out.println(random_result.toString());
-/*    for (TypeKey name: example.keySet())
-    {
-      String key =name.toString();
-      String value = example.get(name).toString();  
-      System.out.println(key + " " + value);  
-    } */
   }
 
+  private double calculateFinishTime(HashMap<Integer,Integer> result, Resource[] resources, Task[] tasks)
+  {
+	  double max=0;
+	  double[] timeOnResource = new double[resources.length];
+	  for(int i=0;i<resources.length;i++)
+		  timeOnResource[i]=resources[i].firstContactTime;
+	  
+	  for(int i=0;i<tasks.length;i++)
+	  {
+		  timeOnResource[result.get(tasks[i].taskId)] += new TaskScheduler().calculateTaskTime(resources[result.get(tasks[i].taskId)],tasks[i]);
+	  }
+	  
+	  for(int i=0;i<resources.length;i++)
+	  {
+		  if(timeOnResource[i] > max)
+			  max = timeOnResource[i];
+	  }
+	  
+	  return max;
+  }
+  
   private HashMap<Integer,Integer> newGreedyAlgo(Resource[] resources, List<Task> taskList) 
   {
     double inf = Double.POSITIVE_INFINITY;
@@ -160,7 +140,7 @@ class TaskScheduler
           break;
         }
       }
-      if(!assigned)
+      if(assigned==0)
       {
     	  int rand = rn.nextInt(2);
     	  if(newDevFinishTime[rand] < resources[rand].lastContactTime)
@@ -169,10 +149,6 @@ class TaskScheduler
     		  offloadedTasks.put(t.taskId,resources[(rand+1)%2].peerId);
     		  
       }
-      
-      
-      //curOffloadedTasks = offloadedTasks.put(resources[curMinPos].peerId);
-      //curOffloadedTasks.add(t.taskId);
       
     }
     return  offloadedTasks;

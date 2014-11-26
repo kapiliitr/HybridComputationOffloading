@@ -1,6 +1,7 @@
 package com.networks.contextprofilecreator;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 //import android.app.AlertDialog;
 import android.content.Context;
 //import android.hardware.Sensor;
@@ -11,14 +12,30 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.DocumentsContract.Document;
+import android.provider.Settings.Secure;
+import android.renderscript.Element;
 
 import java.io.File;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 //import java.util.ArrayList;
 import java.lang.Runtime;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 
 public class ContextManager extends Activity {//implements SensorEventListener{
@@ -47,6 +64,7 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 	
 	public ContextManager(LocationManager objLoc, Context objTemp)
 	{
+		uniqueID = Secure.getString(objTemp.getContentResolver(), Secure.ANDROID_ID);
 		fileIO = objTemp;
 		//Load Data from file -- To Be Implemented
 		checkDataBackup();
@@ -83,6 +101,78 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		updateContextInfo();
 	}
 	
+
+//	public String GPXLocationsString() {
+//		  String path = "D:\\Eclipse Juno\\WorkspaceJuno\\LocationGpx\\CloughToKlaus.gpx";
+//		   
+//		  String info = "";
+//		   
+//		  File gpxFile = new File(path);
+//		  info += gpxFile.getPath() +"\n\n";
+//		   
+//		 
+//		  List<Location> gpxList = decodeGPX(gpxFile);
+//		 
+//		  for(int i = 0; i < gpxList.size(); i++){
+//		   info += ((Location)gpxList.get(i)).getLatitude() 
+//		     + " : "
+//		     + ((Location)gpxList.get(i)).getLongitude() + "\n" ;
+//		  }
+//		  return info;
+//	}
+//		  
+//	private List<Location> decodeGPX(File file){
+//		  List<Location> list = new ArrayList<Location>();
+//		 
+//		  DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+//		  try {
+//		   DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+//		   FileInputStream fileInputStream = new FileInputStream(file);
+//		   org.w3c.dom.Document document = documentBuilder.parse(fileInputStream);
+//		   org.w3c.dom.Element elementRoot = document.getDocumentElement();
+//		    
+//		   NodeList nodelist_trkpt = elementRoot.getElementsByTagName("trkpt");
+//		 
+//		   for(int i = 0; i < nodelist_trkpt.getLength(); i++){
+//		     
+//		    Node node = nodelist_trkpt.item(i);
+//		    NamedNodeMap attributes = node.getAttributes();
+//		     
+//		    String newLatitude = attributes.getNamedItem("lat").getTextContent();
+//		    Double newLatitude_double = Double.parseDouble(newLatitude);
+//		     
+//		    String newLongitude = attributes.getNamedItem("lon").getTextContent();
+//		    Double newLongitude_double = Double.parseDouble(newLongitude);
+//		     
+//		    String newLocationName = newLatitude + ":" + newLongitude;
+//		    Location newLocation = new Location(newLocationName);
+//		    newLocation.setLatitude(newLatitude_double);
+//		    newLocation.setLongitude(newLongitude_double);
+//		     
+//		    list.add(newLocation);
+//		 
+//		   }
+//		    
+//		   fileInputStream.close();
+//		    
+//		  } catch (ParserConfigurationException e) {
+//		   // TODO Auto-generated catch block
+//		   e.printStackTrace();
+//		  } catch (FileNotFoundException e) {
+//		   // TODO Auto-generated catch block
+//		   e.printStackTrace();
+//		  } catch (SAXException e) {
+//		   // TODO Auto-generated catch block
+//		   e.printStackTrace();
+//		  } catch (IOException e) {
+//		   // TODO Auto-generated catch block
+//		   e.printStackTrace();
+//		  }
+//		   
+//		  return list;
+//	}
+	
+		 ///////////////////:
 	private void checkDataBackup()
 	{
 		String strContextData = "";
@@ -141,19 +231,52 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		locationManager.removeUpdates(locationListener);
 	}
 	
-	public void printUpdates()
+	
+	public void printUpdates(Context objTemp)
 	{
-//		ContextInfo objContextInfo = objHistory.getLastContextdata();
-//		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-//		alertDialog.setTitle("Context Infromation");
-////		alertDialog.setMessage("Context Distance: " + objContextInfo.getContextDistanceFrom());
+		
+		ContextInfo objCurrContextInfo = objHistory.getLastContextdata();
+		double CurrLong=objCurrContextInfo.getContextLongitude();
+		double CurrLat=objCurrContextInfo.getContextLatitude();
+//		uniqueID = Secure.getString(objTemp.getContentResolver(), Secure.ANDROID_ID);
+
+		AlertDialog.Builder alertDialog = new AlertDialog.Builder(objTemp);
+		alertDialog.setTitle("Context Infromation");
+////	alertDialog.setMessage("Context Distance: " + objContextInfo.getContextDistanceFrom());
 //		alertDialog.setMessage("Context Latitude: " + objContextInfo.getContextLatitude());
 //		alertDialog.setMessage("Context Longitude: " + objContextInfo.getContextLongitude());
-//		alertDialog.setMessage("Context CPU Usage: " + objContextInfo.getContextCPUUsage());
-//		long timeDiff = objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime();
+//		alertDialog.setMessage("\n Context CPU Usage: " + objContextInfo.getContextCPUUsage());
+				
+		ContextInfo objContextInfo = new ContextInfo();
+		double timeDiff = (objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001;
+		objContextInfo.setMngrID(uniqueID);
+		objContextInfo.setContextAcc(objHistory.getLastContextdata().getContextAcc());
+		objContextInfo.setContextCPUUsage(objHistory.getLastContextdata().getContextCPUUsage());
+		objContextInfo.setStartTime();
+		Location temploc = objKalmanFilter.predictTime(timeDiff,objContextInfo.getMngrID());	
+		objContextInfo.setContextLocation(temploc);
+		Location temploc1 = objKalmanFilter.predictTime(timeDiff*2,objContextInfo.getMngrID());	
+		objContextInfo.setContextLocation(temploc1);
+		Location temploc2 = objKalmanFilter.predictTime(timeDiff*3,objContextInfo.getMngrID());	
+		objContextInfo.setContextLocation(temploc2);
+		Location temploc3 = objKalmanFilter.predictTime(timeDiff*4,objContextInfo.getMngrID());	
+		objContextInfo.setContextLocation(temploc3);
+		
+		alertDialog.setMessage("Context Longitude: "+objContextInfo.getMngrID());// + objContextInfo.getContextLongitude()+"Context Latitude: " + objContextInfo.getContextLatitude()
+//				 "Context Longitude0: " + temploc.getLongitude()+"Context Latitude0: " + temploc.getLatitude()
+//				+ "Context Longitude1: " + temploc1.getLongitude()+"Context Latitude1: " + temploc1.getLatitude()
+//				+ "Context Longitude2: " + temploc2.getLongitude()+"Context Latitude2: " + temploc2.getLatitude()
+//				+ "Context Longitude3: " + temploc3.getLongitude()+"Context Latitude3: " + temploc3.getLatitude());
+//		
+		
+//		alertDialog.setMessage(uniqueID + "\n Context CPU Usage: " + objContextInfo.getContextCPUUsage()
+//				+"\n Context Longitude: " + objContextInfo.getContextLongitude()+ "\n Context Latitude: " + objContextInfo.getContextLatitude()
+//				+ "\n Size" + objHistory.getContextlength()+ "\n sizzzz" + objContextInfo.getContextLocSize());// +"\n Ahawa \n" + salem());
+
+		//		long timeDiff = objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime();
 //		alertDialog.setMessage("Context Predicted Location: " + getPredictedLoc(timeDiff));
-//		alertDialog.setPositiveButton("Ok", null);
-//		alertDialog.show();
+		alertDialog.setPositiveButton("Ok", null);
+		alertDialog.show();
 	}
 	
 	private static final int TWO_MINUTES = 1000 * 60 * 2;
@@ -232,18 +355,15 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		// -m 10, how many entries you want, -d 1, delay by how much, -n 1,
 		// number of iterations
 		//ArrayList<String> list = new ArrayList<String>();
-		String line="Salem";
-//		String UserCPU = "";
+		String line="";
 		int UserCPUperc = 0;
 		int SystemCPUperc=0;
 		try{
-			Process p = Runtime.getRuntime().exec("top -m 15 -d 2 -n 2");
+			Process p = Runtime.getRuntime().exec("top -m 10 -d 2 -n 2");
 			int i=0;
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
 					p.getInputStream()));
-//			line = reader.readLine();
 			while ((i<4)) {
-//				list.add(line);
 				line = reader.readLine();
 				i++;
 			}
@@ -312,8 +432,10 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		}
 	}
 	
+	
 	public ContextInfo getContextInfo()
 	{
+//		uniqueID = Secure.getString(this.getContentResolver(), Secure.ANDROID_ID); 
 		ContextInfo objContextInfo = new ContextInfo();
 		double timeDiff = (objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001;
 		objContextInfo.setMngrID(uniqueID);
@@ -329,6 +451,7 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		Location temploc3 = objKalmanFilter.predictTime(timeDiff*4,uniqueID + 4);	
 		objContextInfo.setContextLocation(temploc3);
 		return objContextInfo;
+		
 	}
 	
 	public Boolean CompareContextInfo(ContextInfo objPeerContextInfo)

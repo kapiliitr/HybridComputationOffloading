@@ -3,6 +3,7 @@ package com.networks.contextprofilecreator;
 //import java.io.BufferedReader;
 //import java.io.InputStreamReader;
 //import java.util.ArrayList;
+import java.io.FileInputStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,7 @@ import android.content.Context;
 //import android.app.AlertDialog;
 //import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 //import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,38 +35,51 @@ import android.location.LocationManager;
 
 public class MainActivity extends Activity {	
 	
-	ListView lv;
+//	ListView lv;
 	private ContextManager objContextDatahandler = null;
-	
+	int delayupdates=1;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		lv = (ListView) findViewById(R.id.listView1);
+//		lv = (ListView) findViewById(R.id.listView1);
+    	
 		setContentView(R.layout.activity_mobility_pattern);
 		objContextDatahandler = new ContextManager((LocationManager)this.getSystemService(Context.LOCATION_SERVICE),this.getApplicationContext());
 		
-//		Location loc = new Location("XYZ");	
+		Location loc = new Location("XYZ");	
 		objContextDatahandler.updateContextInfo();
-//		objContextDatahandler.setTrackingLoc(loc);
+		objContextDatahandler.setTrackingLoc(loc);
 //		objContextDatahandler.printUpdates();
+		
+		
 //		GPX gpx;
 //		try
 //		{
 //			GPXParser p = new GPXParser();
-//			FileInputStream in = new FileInputStream("C:\\virtua's stuff\\HybridComputationOffloading\\ContextManagerMilestone3\\LocationGpx\\CloughToKlaus.gpx");
+//			FileInputStream in = new FileInputStream("D:\\Eclipse Juno\\WorkspaceJuno\\LocationGpx\\CloughToKlaus.gpx");
 //			gpx = p.parseGPX(in);
 //		}
 //		catch(Exception ex)
 //		{
 //			
-//		}		
-		ScheduledExecutorService scheduleTaskExecutor = Executors.newScheduledThreadPool(5);
-		// This schedule a runnable task every 2 minutes
-		scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
-		  public void run() {
+//		}
+
+	
+		final Handler handler = new Handler();
+		final Runnable r = new Runnable()
+		{
+		    public void run() 
+		    {
+		    	Location loc = new Location("XYZ");	
 				objContextDatahandler.updateContextInfo();
-		  }
-		}, 0, 1, TimeUnit.MINUTES);
+				objContextDatahandler.setTrackingLoc(loc);
+//				objContextDatahandler.printUpdates(MainActivity.this);
+		    	handler.postDelayed(this,delayupdates*60*1000);// This runs task every 2 minutes
+
+		    }
+		};
+		handler.postDelayed(r,delayupdates*60*1000); 
+		
 	}
 
 	public void updateBtn(View v) {
@@ -72,7 +87,7 @@ public class MainActivity extends Activity {
 		try {
 			Location loc = new Location("XYZ");
 			objContextDatahandler.setTrackingLoc(loc);
-			objContextDatahandler.printUpdates();
+			objContextDatahandler.printUpdates(this);
 
 			Toast.makeText(getBaseContext(), "Got update",Toast.LENGTH_SHORT)
 					.show();

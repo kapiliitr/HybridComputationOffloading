@@ -17,7 +17,7 @@ public class HistoricalContext {
 	
 	public ContextInfo getLastContextdata()
 	{
-		return lstContextData.get(lstContextData.size() - 1);		
+		return lstContextData.get(lstContextData.size() - 1);
 	}
 	
 	public int getContextlength()

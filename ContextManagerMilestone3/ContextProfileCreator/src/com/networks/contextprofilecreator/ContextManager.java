@@ -102,75 +102,75 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 	}
 	
 
-//	public String GPXLocationsString() {
-//		  String path = "D:\\Eclipse Juno\\WorkspaceJuno\\LocationGpx\\CloughToKlaus.gpx";
-//		   
-//		  String info = "";
-//		   
-//		  File gpxFile = new File(path);
-//		  info += gpxFile.getPath() +"\n\n";
-//		   
-//		 
-//		  List<Location> gpxList = decodeGPX(gpxFile);
-//		 
-//		  for(int i = 0; i < gpxList.size(); i++){
-//		   info += ((Location)gpxList.get(i)).getLatitude() 
-//		     + " : "
-//		     + ((Location)gpxList.get(i)).getLongitude() + "\n" ;
-//		  }
-//		  return info;
-//	}
-//		  
-//	private List<Location> decodeGPX(File file){
-//		  List<Location> list = new ArrayList<Location>();
-//		 
-//		  DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-//		  try {
-//		   DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-//		   FileInputStream fileInputStream = new FileInputStream(file);
-//		   org.w3c.dom.Document document = documentBuilder.parse(fileInputStream);
-//		   org.w3c.dom.Element elementRoot = document.getDocumentElement();
-//		    
-//		   NodeList nodelist_trkpt = elementRoot.getElementsByTagName("trkpt");
-//		 
-//		   for(int i = 0; i < nodelist_trkpt.getLength(); i++){
-//		     
-//		    Node node = nodelist_trkpt.item(i);
-//		    NamedNodeMap attributes = node.getAttributes();
-//		     
-//		    String newLatitude = attributes.getNamedItem("lat").getTextContent();
-//		    Double newLatitude_double = Double.parseDouble(newLatitude);
-//		     
-//		    String newLongitude = attributes.getNamedItem("lon").getTextContent();
-//		    Double newLongitude_double = Double.parseDouble(newLongitude);
-//		     
-//		    String newLocationName = newLatitude + ":" + newLongitude;
-//		    Location newLocation = new Location(newLocationName);
-//		    newLocation.setLatitude(newLatitude_double);
-//		    newLocation.setLongitude(newLongitude_double);
-//		     
-//		    list.add(newLocation);
-//		 
-//		   }
-//		    
-//		   fileInputStream.close();
-//		    
-//		  } catch (ParserConfigurationException e) {
-//		   // TODO Auto-generated catch block
-//		   e.printStackTrace();
-//		  } catch (FileNotFoundException e) {
-//		   // TODO Auto-generated catch block
-//		   e.printStackTrace();
-//		  } catch (SAXException e) {
-//		   // TODO Auto-generated catch block
-//		   e.printStackTrace();
-//		  } catch (IOException e) {
-//		   // TODO Auto-generated catch block
-//		   e.printStackTrace();
-//		  }
-//		   
-//		  return list;
-//	}
+	public String GPXLocationsString() {
+		  String path = "C:\\virtua's stuff\\HybridComputationOffloading\\ContextManagerMilestone3\\LocationGpx\\CloughToKlaus.gpx";
+		   
+		  String info = "";
+		   
+		  File gpxFile = new File(path);
+		  info += gpxFile.getPath() +"\n\n";
+		   
+		 
+		  List<Location> gpxList = decodeGPX(gpxFile);
+		 
+		  for(int i = 0; i < gpxList.size(); i++){
+		   info += ((Location)gpxList.get(i)).getLatitude() 
+		     + " : "
+		     + ((Location)gpxList.get(i)).getLongitude() + "\n" ;
+		  }
+		  return info;
+	}
+		  
+	private List<Location> decodeGPX(File file){
+		  List<Location> list = new ArrayList<Location>();
+		 
+		  DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		  try {
+		   DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+		   FileInputStream fileInputStream = new FileInputStream("C:\\virtua's stuff\\HybridComputationOffloading\\ContextManagerMilestone3\\LocationGpx\\CloughToKlaus.gpx");
+		   org.w3c.dom.Document document = documentBuilder.parse(fileInputStream);
+		   org.w3c.dom.Element elementRoot = document.getDocumentElement();
+		    
+		   NodeList nodelist_trkpt = elementRoot.getElementsByTagName("trkpt");
+		 
+		   for(int i = 0; i < nodelist_trkpt.getLength(); i++){
+		     
+		    Node node = nodelist_trkpt.item(i);
+		    NamedNodeMap attributes = node.getAttributes();
+		     
+		    String newLatitude = attributes.getNamedItem("lat").getTextContent();
+		    Double newLatitude_double = Double.parseDouble(newLatitude);
+		     
+		    String newLongitude = attributes.getNamedItem("lon").getTextContent();
+		    Double newLongitude_double = Double.parseDouble(newLongitude);
+		     
+		    String newLocationName = newLatitude + ":" + newLongitude;
+		    Location newLocation = new Location(newLocationName);
+		    newLocation.setLatitude(newLatitude_double);
+		    newLocation.setLongitude(newLongitude_double);
+		     
+		    list.add(newLocation);
+		 
+		   }
+		    
+		   fileInputStream.close();
+		    
+		  } catch (ParserConfigurationException e) {
+		   // TODO Auto-generated catch block
+		   e.printStackTrace();
+		  } catch (FileNotFoundException e) {
+		   // TODO Auto-generated catch block
+		   e.printStackTrace();
+		  } catch (SAXException e) {
+		   // TODO Auto-generated catch block
+		   e.printStackTrace();
+		  } catch (IOException e) {
+		   // TODO Auto-generated catch block
+		   e.printStackTrace();
+		  }
+		   
+		  return list;
+	}
 	
 		 ///////////////////:
 	private void checkDataBackup()
@@ -186,7 +186,7 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 				if (is!=null) {	
 					while ((strContextData = reader.readLine()) != null) {	
 						ContextInfo objContextInfo = new ContextInfo(strContextData);
-						double timeDiff = (objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001;
+						double timeDiff = (((objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001)/60)/60;
 						objHistory.appendContextdata(objContextInfo);
 						objKalmanFilter.Update(objContextInfo.getContextLocation(),timeDiff);
 					}				
@@ -248,7 +248,7 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 //		alertDialog.setMessage("\n Context CPU Usage: " + objContextInfo.getContextCPUUsage());
 				
 		ContextInfo objContextInfo = new ContextInfo();
-		double timeDiff = (objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001;
+		double timeDiff = (((objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001)/60)/60;
 		objContextInfo.setMngrID(uniqueID);
 		objContextInfo.setContextAcc(objHistory.getLastContextdata().getContextAcc());
 		objContextInfo.setContextCPUUsage(objHistory.getLastContextdata().getContextCPUUsage());
@@ -262,12 +262,12 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		Location temploc3 = objKalmanFilter.predictTime(timeDiff*4,objContextInfo.getMngrID());	
 		objContextInfo.setContextLocation(temploc3);
 		
-		alertDialog.setMessage("Context Longitude: "+objContextInfo.getMngrID());// + objContextInfo.getContextLongitude()+"Context Latitude: " + objContextInfo.getContextLatitude()
-//				 "Context Longitude0: " + temploc.getLongitude()+"Context Latitude0: " + temploc.getLatitude()
-//				+ "Context Longitude1: " + temploc1.getLongitude()+"Context Latitude1: " + temploc1.getLatitude()
-//				+ "Context Longitude2: " + temploc2.getLongitude()+"Context Latitude2: " + temploc2.getLatitude()
-//				+ "Context Longitude3: " + temploc3.getLongitude()+"Context Latitude3: " + temploc3.getLatitude());
-//		
+		alertDialog.setMessage("Context Longitude: "+objContextInfo.getMngrID() + objContextInfo.getContextLongitude()+"Context Latitude: " + objContextInfo.getContextLatitude()
+				 + "Context Longitude0: " + temploc.getLongitude()+"Context Latitude0: " + temploc.getLatitude()
+				+ "Context Longitude1: " + temploc1.getLongitude()+"Context Latitude1: " + temploc1.getLatitude()
+			+ "Context Longitude2: " + temploc2.getLongitude()+"Context Latitude2: " + temploc2.getLatitude()
+			+ "Context Longitude3: " + temploc3.getLongitude()+"Context Latitude3: " + temploc3.getLatitude());
+		
 		
 //		alertDialog.setMessage(uniqueID + "\n Context CPU Usage: " + objContextInfo.getContextCPUUsage()
 //				+"\n Context Longitude: " + objContextInfo.getContextLongitude()+ "\n Context Latitude: " + objContextInfo.getContextLatitude()
@@ -344,7 +344,7 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		objContextInfo.setStartTime();
 		if(objHistory.getContextlength() > 0)
 		{
-			timeDiff = (objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001;
+			timeDiff = (((objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001)/60)/60;
 		}
 		objHistory.appendContextdata(objContextInfo);
 		objKalmanFilter.Update(objContextInfo.getContextLocation(),timeDiff);
@@ -437,7 +437,7 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 	{
 //		uniqueID = Secure.getString(this.getContentResolver(), Secure.ANDROID_ID); 
 		ContextInfo objContextInfo = new ContextInfo();
-		double timeDiff = (objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001;
+		double timeDiff = (((objContextInfo.returnCurrentTime() - objHistory.getLastContextdata().getStartTime())*0.001)/60)/60;
 		objContextInfo.setMngrID(uniqueID);
 		objContextInfo.setContextAcc(objHistory.getLastContextdata().getContextAcc());
 		objContextInfo.setContextCPUUsage(objHistory.getLastContextdata().getContextCPUUsage());

@@ -50,13 +50,13 @@ public class MainActivity extends Activity {
 		objContextDatahandler.updateContextInfo();
 		objContextDatahandler.setTrackingLoc(loc);
 //		objContextDatahandler.printUpdates();
-		
+//		objContextDatahandler.GPXLocationsString();
 		
 //		GPX gpx;
 //		try
 //		{
 //			GPXParser p = new GPXParser();
-//			FileInputStream in = new FileInputStream("D:\\Eclipse Juno\\WorkspaceJuno\\LocationGpx\\CloughToKlaus.gpx");
+//			FileInputStream in = new FileInputStream("C:\\virtua's stuff\\HybridComputationOffloading\\ContextManagerMilestone3\\LocationGpx\\CloughToKlaus.gpx");
 //			gpx = p.parseGPX(in);
 //		}
 //		catch(Exception ex)

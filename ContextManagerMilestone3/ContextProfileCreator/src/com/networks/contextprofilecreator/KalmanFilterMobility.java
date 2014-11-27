@@ -31,8 +31,8 @@ public class KalmanFilterMobility {
 	private double accU = 1;							//Acceleration defaulted to 1
 	private SimpleMatrix initState = new SimpleMatrix(2, 1); //Initialize initial position to 0,0
 	private SimpleMatrix estimatedState = initState; //Make the estimate and measured state same
-	private double minCovarX = 1;				 	//Min covariance to move X along.
-	private double minCovarZ = 1;					 //Min covariance to move Z along.
+	private double minCovarX = 13;				 	//Min covariance to move X along.
+	private double minCovarZ = 0.4;					 //Min covariance to move Z along.
 	private SimpleMatrix P;							 //position variance
 	public Boolean debugMode = false; 				//Writes all prediction to file
 	public Context debugCntxt; 
@@ -60,8 +60,8 @@ public class KalmanFilterMobility {
 			C = new SimpleMatrix(temp);
 			temp = new double[][] {{time*time*time*time/4,time*time*time/2},{time*time*time/2,time*time}};
 			SimpleMatrix Ex = new SimpleMatrix(temp).scale(minCovarX*minCovarX); 		 //position noise conversion to Covariance matrix
-			temp = new double[][] {{1,0},{0,1}};
-			Ex = new SimpleMatrix(temp);
+//			temp = new double[][] {{1,0},{0,1}};
+//			Ex = new SimpleMatrix(temp);
 			if(P == null)
 			{
 				P = Ex;

@@ -61,7 +61,7 @@ public class MainActivity extends Activity {
 //		}
 //		catch(Exception ex)
 //		{
-//			
+//			System.out.println(ex.getStackTrace());
 //		}
 
 	
@@ -72,7 +72,7 @@ public class MainActivity extends Activity {
 		    {
 		    	Location loc = new Location("XYZ");	
 				objContextDatahandler.updateContextInfo();
-				objContextDatahandler.setTrackingLoc(loc);
+//				objContextDatahandler.setTrackingLoc(loc);
 //				objContextDatahandler.printUpdates(MainActivity.this);
 		    	handler.postDelayed(this,delayupdates*60*1000);// This runs task every 2 minutes
 
@@ -80,13 +80,27 @@ public class MainActivity extends Activity {
 		};
 		handler.postDelayed(r,delayupdates*60*1000); 
 		
+		final Handler handler1 = new Handler();
+		final Runnable r1 = new Runnable()
+		{
+		    public void run() 
+		    {
+//				objContextDatahandler.updateContextInfo();
+//				objContextDatahandler.setTrackingLoc(loc);
+				objContextDatahandler.getContextInfo();
+				handler1.postDelayed(this,15*1000);// This runs task every 2 minutes
+
+		    }
+		};
+		handler1.postDelayed(r1,15*1000); 
+		
 	}
 
 	public void updateBtn(View v) {
 //		ArrayList<String> list = new ArrayList<String>();
 		try {
 			Location loc = new Location("XYZ");
-			objContextDatahandler.setTrackingLoc(loc);
+//			objContextDatahandler.setTrackingLoc(loc);
 			objContextDatahandler.printUpdates(this);
 
 			Toast.makeText(getBaseContext(), "Got update",Toast.LENGTH_SHORT)

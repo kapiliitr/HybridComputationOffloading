@@ -82,9 +82,10 @@ public class KalmanFilterMobility {
 
 				try {
 				  outputStream = debugCntxt.openFileOutput("ContextText.txt",debugFileMode);
-				  String kalmanData = "Update: " + debugCnt +  "Kalman Gain(K): " + K.toString() 
-						  + "Covariance(P): " + P.toString() + "Input Location: " + loc.getLatitude() + ", " + loc.getLongitude() 
-						  + "Corrected Prediction(estimatedState): " + estimatedState + " ";
+				  String kalmanData = "Update: " + debugCnt +  //"Kalman Gain(K): " + K.toString() 
+						  //+ "Covariance(P): " + P.toString() + 
+						  "Input Location: Latitude: " + loc.getLatitude() + ", Longitude: " + loc.getLongitude() 
+						  + "Corrected Prediction(estimatedState): Latitude: " + estimatedState.get(0,0) + " Longitude: " + estimatedState.get(1,0) +" ";
 				  outputStream.write(kalmanData.getBytes());
 				  outputStream.close();
 				} catch (Exception e) {
@@ -100,10 +101,11 @@ public class KalmanFilterMobility {
 		A = new SimpleMatrix(temp);
 		temp = new double[][] {{time*time/2},{time}};
 		B = new SimpleMatrix(temp);	
-		estimatedState = A.mult(estimatedState).plus(B.scale(accU));
+		SimpleMatrix predState = new SimpleMatrix(2, 1);
+		predState = A.mult(estimatedState).plus(B.scale(accU));
 		Location output = new Location(uniqueID);
-		output.setLatitude(estimatedState.get(0, 0));
-		output.setLongitude(estimatedState.get(1,0));
+		output.setLatitude(predState.get(0, 0));
+		output.setLongitude(predState.get(1,0));
 //		output.setSpeed((float)estimatedState.get(2, 1));
 		if(debugMode)
 		{
@@ -111,7 +113,7 @@ public class KalmanFilterMobility {
 
 			try {
 			  outputStream = debugCntxt.openFileOutput("ContextText.txt", debugFileMode);
-			  String kalmanData = "Prediction: " + debugCnt + "Corrected Prediction(estimatedState): " + estimatedState + " ";
+			  String kalmanData = "Prediction: " + debugCnt + "Corrected Prediction(estimatedState): Latitude: " + output.getLatitude() + " Longitude:  " + output.getLongitude() + " ";
 			  outputStream.write(kalmanData.getBytes());
 			  outputStream.close();
 			} catch (Exception e) {

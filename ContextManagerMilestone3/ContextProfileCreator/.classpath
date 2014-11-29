@@ -6,7 +6,6 @@
 	<classpathentry kind="lib" path="libs/EJML-core.jar"/>
 	<classpathentry kind="lib" path="libs/EJML-equation.jar"/>
 	<classpathentry kind="lib" path="libs/EJML-experimental.jar"/>
-	<classpathentry kind="lib" path="libs/gpxparser-20130603.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="output" path="bin/classes"/>

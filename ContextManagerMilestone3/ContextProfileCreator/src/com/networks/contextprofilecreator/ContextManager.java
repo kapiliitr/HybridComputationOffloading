@@ -52,6 +52,8 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 	private double accU = 1;
 	private String filename = "Context_History";
 	private Context fileIO;
+	private GPXTestData objTestData;
+	private Boolean testMode = true;
 	
 	public Location getTrackingLoc()
 	{
@@ -98,6 +100,10 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 		objKalmanFilter.debugCntxt = fileIO;
 		objKalmanFilter.debugMode = true;
 		objKalmanFilter.debugFileMode = Context.MODE_APPEND;
+		if(testMode)
+		{
+			objTestData = new GPXTestData(objTemp);
+		}
 		updateContextInfo();
 	}
 	
@@ -219,16 +225,28 @@ public class ContextManager extends Activity {//implements SensorEventListener{
 	
 	private void getLocUpdates(ContextInfo objContextInfo)
 	{
-		locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
-		Location currentLocation = locationManager.getLastKnownLocation(locationProvider);
-		boolean loc = isBetterLocation(currentLocation, lastKnownLocation);
-		if(loc)
+		if(!testMode)
 		{
-			lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+			locationManager.requestLocationUpdates(locationProvider, 0, 0, locationListener);
+			Location currentLocation = locationManager.getLastKnownLocation(locationProvider);
+			boolean loc = isBetterLocation(currentLocation, lastKnownLocation);
+			if(loc)
+			{
+				lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+			}
+			objContextInfo.setContextLocation(lastKnownLocation);
+			objContextInfo.setContextAcc(accU);
+			locationManager.removeUpdates(locationListener);
 		}
-		objContextInfo.setContextLocation(lastKnownLocation);
-		objContextInfo.setContextAcc(accU);
-		locationManager.removeUpdates(locationListener);
+		else
+		{
+			double[] tstData = objTestData.getTestData();
+			Location currentLocation = new Location("TestGpx");
+			currentLocation.setLatitude(tstData[0]);
+			currentLocation.setLongitude(tstData[1]);
+			objContextInfo.setContextLocation(currentLocation);
+			objContextInfo.setContextAcc(accU);
+		}
 	}
 	
 	

@@ -52,6 +52,7 @@ public class KalmanFilterMobility {
 	{
 		if(loc != null)
 		{
+			time = time * 0.001;
 			double[][] temp = new double[][] {{1,time},{0,1}};
 			A = new SimpleMatrix(temp);
 			temp = new double[][] {{time*time/2},{time}};
@@ -72,7 +73,7 @@ public class KalmanFilterMobility {
 			P = A.mult(P).mult(A.transpose()).plus(Ex);
 			SimpleMatrix K = new SimpleMatrix(2,2);
 			K = P.mult(C.transpose()).mult((C.mult(P).mult(C.transpose()).plus(Ez)).invert());
-			temp = new double[][] {{loc.getLatitude()},{loc.getLongitude()}};
+			temp = new double[][] {{loc.getLatitude()*10000},{loc.getLongitude()*10000}};
 			SimpleMatrix tempLoc = new SimpleMatrix(temp);
 			estimatedState = estimatedState.plus(K.mult(tempLoc.minus(C.mult(estimatedState))));
 			P = (SimpleMatrix.identity(2).minus(K.mult(C))).mult(P);
@@ -97,6 +98,7 @@ public class KalmanFilterMobility {
 	
 	public Location predictTime(double time,String uniqueID)
 	{
+		time = time * 0.001;
 		double[][] temp = new double[][] {{1,time},{0,1}};
 		A = new SimpleMatrix(temp);
 		temp = new double[][] {{time*time/2},{time}};
@@ -104,8 +106,8 @@ public class KalmanFilterMobility {
 		SimpleMatrix predState = new SimpleMatrix(2, 1);
 		predState = A.mult(estimatedState).plus(B.scale(accU));
 		Location output = new Location(uniqueID);
-		output.setLatitude(predState.get(0, 0));
-		output.setLongitude(predState.get(1,0));
+		output.setLatitude(predState.get(0, 0)*0.0001);
+		output.setLongitude(predState.get(1,0)*0.0001);
 //		output.setSpeed((float)estimatedState.get(2, 1));
 		if(debugMode)
 		{
